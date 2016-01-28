@@ -99,28 +99,18 @@ class VirtTest(test.Test):
         self.background_errors = Queue.Queue()
         self.whiteboard = None
         super(VirtTest, self).__init__(methodName=methodName, name=name,
-                                       params=params, base_logdir=base_logdir,
+                                       params=params.pop("avocado_params",
+                                                         None),
+                                       base_logdir=base_logdir,
                                        tag=tag, job=job,
                                        runner_queue=runner_queue)
         self.builddir = os.path.join(self.workdir, 'backends',
                                      params.get("vm_type"))
         self.tmpdir = os.path.dirname(self.workdir)
-
+        # Move self.params to self.avocado_params and initialize virttest
+        # (cartesian_config) params
+        self.avocado_params = self.params
         self.params = utils_params.Params(params)
-        # Here we turn the data the multiplexer injected into the params and
-        # turn it into an AvocadoParams object, that will allow users to
-        # access data from it. Example:
-        # sleep_length = test.avocado_params.get('sleep_length', default=1)
-        p = params.get('avocado_params', None)
-        if p is not None:
-            params, mux_path = p[0], p[1]
-        else:
-            params, mux_path = [], []
-        self.avocado_params = multiplexer.AvocadoParams(params, self.name,
-                                                        self.tag,
-                                                        mux_path,
-                                                        self.default_params)
-
         self.debugdir = self.logdir
         self.resultsdir = self.logdir
         utils_misc.set_log_file_dir(self.logdir)
