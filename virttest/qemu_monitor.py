@@ -1050,6 +1050,13 @@ class HumanMonitor(Monitor):
         """
         return self.cmd("migrate_set_downtime %s" % value)
 
+    def migrate_start_postcopy(self):
+        """
+        Switch into postcopy migrate mode
+        """
+
+        return self.cmd("migrate_start_postcopy")
+
     def sendkey(self, keystr, hold_time=1):
         """
         Send key combination to VM.
