@@ -1190,6 +1190,27 @@ class HumanMonitor(Monitor):
         value = match.group(1)
         return value == "on"
 
+    def get_migrate_progress(self):
+        """
+        Return the transfered / remaining ram ratio
+
+        :return: float(transfered/remaining)
+        """
+        status = self.info("migrate", debug=False)
+        rem = re.search(r"remaining ram: (\d+) kbytes", status)
+        total = re.search(r"total ram: (\d+) kbytes", status)
+        if rem and total:
+            ret = 100 - 100 * int(rem.group(1)) / int(total.group(1))
+            logging.debug("Migration progress: %s%%", ret)
+            return ret
+        if "Migration status: completed" in status:
+            logging.debug("Migration progress: 100%")
+            return 100
+        elif "Migration status: setup" in status:
+            logging.debug("Migration progress: 0%")
+            return 0
+        raise MonitorError("Unable to parse migration progress:\n%s" % status)
+
 
 class QMPMonitor(Monitor):
 
@@ -2126,3 +2147,11 @@ class QMPMonitor(Monitor):
             if item["capability"] == capability:
                 return item["state"]
         return False
+
+    def get_migrate_progress(self):
+        """
+        Return the transfered / remaining ram ratio
+
+        :return: float(transfered/remaining)
+        """
+        raise NotImplemented
