@@ -3689,7 +3689,10 @@ class VM(virt_vm.BaseVM):
             logging.info("Migrating to %s", uri)
             self.monitor.migrate(uri)
 
-            for func in mig_inner_cmd:
+            # mig_inner_cmd = [(delay, func), ...]
+            for delay, func in mig_inner_cmd:
+                while self.monitor.get_migrate_progress() < delay:
+                    time.sleep(0.1)
                 func()
 
             if not_wait_for_migration:
